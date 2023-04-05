@@ -1,0 +1,49 @@
+import cv2
+import os
+# Carregue o classificador de rosto pré-treinado
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+def process_stream(rtsp_url):
+    # Inicie a captura de vídeo
+    cap = cv2.VideoCapture(rtsp_url)
+    count = 0
+    # Verifique o último valor de frame .jpg salvo
+    path = 'C:/Users/Renato/Desktop/Prime Field/IA-PYTHON/saved_faces/'
+    path2 = 'C:/Users/Renato/Desktop/Prime Field/IA-PYTHON/saved_frames/'
+    files = [f for f in os.listdir(path) if f.endswith('.jpg')]
+    count = max([int(f.split('.')[0].split('frame')[1]) for f in files]) + 1 if files else 0
+
+    while True:
+        # Leia o quadro atual da câmeraqq
+        ret, frame = cap.read()
+
+        # Converta para escala de cinqza
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Detecte rostosq
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+        # Desenhe retângulos ao redor dos rostos
+        for (x,y,w,h) in faces:
+            cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
+            # Extraia a região de interesse (ROI) da imagem
+            roi = frame[y:y+h, x:x+w]
+            print('Salvando quadro', count)
+            # Salve o quadro atual na pasta 'capturas'
+            cv2.imwrite(path+'frame%d.jpg' % count, roi)
+            cv2.imwrite(path2+'frame%d.jpg' % count, frame)
+        count = count + 1
+
+        # Exiba o quadro resultante
+        cv2.imshow('frame', frame)
+        
+        
+
+        # Verifique se a tecla 'q' foi pressionada
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # Libere a captura de vídeo e destrua todas as janelas
+    cap.release()
+    cv2.destroyAllWindows()
+
+process_stream(0)
